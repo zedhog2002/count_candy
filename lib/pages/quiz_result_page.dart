@@ -27,6 +27,13 @@ class QuizResultPage extends StatefulWidget {
 class _QuizResultPageState extends State<QuizResultPage> {
   double? prediction;
   bool quizSubmitted = false;
+
+  // Track the completion of all quizzes
+  bool countingCompleted = false;
+  bool coloringCompleted = false;
+  bool calculateCompleted = false;
+
+
   Future<void> getUserID() async {
     // Retrieve the currently signed-in user
     User? user = FirebaseAuth.instance.currentUser;
@@ -41,36 +48,48 @@ class _QuizResultPageState extends State<QuizResultPage> {
     int avgResult;
     try {
       List<int> questionids = widget.questionids;
+
       if (widget.quizType == 'counting') {
         quizid = 2;
-        avgResult = ((widget.userAnswers['counting']!
-            .fold(0.0, (sum, score) => sum + score) /
-            5) *
-            100)
-            .toInt();
+
+        // Ensure widget.userAnswers['counting'] is not null
+        List<double>? countingAnswers = widget.userAnswers['counting'] ?? [];
+        if (countingAnswers.isNotEmpty) {
+          avgResult = ((countingAnswers.fold(0.0, (sum, score) => sum + score) / 5) * 100).toInt();
+        } else {
+          avgResult = 0; // Default to 0 if no answers are present
+        }
+        countingCompleted = true; // Mark counting as completed
       } else if (widget.quizType == 'coloring') {
         quizid = 1;
-        avgResult = ((widget.userAnswers['coloring']!
-            .fold(0.0, (sum, score) => sum + score) /
-            5) *
-            100)
-            .toInt();
+
+        // Ensure widget.userAnswers['coloring'] is not null
+        List<double>? coloringAnswers = widget.userAnswers['coloring'] ?? [];
+        if (coloringAnswers.isNotEmpty) {
+          avgResult = ((coloringAnswers.fold(0.0, (sum, score) => sum + score) / 5) * 100).toInt();
+        } else {
+          avgResult = 0; // Default to 0 if no answers are present
+        }
+        coloringCompleted = true; // Mark coloring as completed
       } else if (widget.quizType == 'calculate') {
-        quizid = 3; // Change it according to the 'calculate' quiz type
-        avgResult = ((widget.userAnswers['calculate']!
-            .fold(0.0, (sum, score) => sum + score) /
-            5) *
-            100)
-            .toInt();
+        quizid = 3;
+
+        // Ensure widget.userAnswers['calculate'] is not null
+        List<double>? calculationAnswers = widget.userAnswers['calculate'] ?? [];
+        if (calculationAnswers.isNotEmpty) {
+          avgResult = ((calculationAnswers.fold(0.0, (sum, score) => sum + score) / 5) * 100).toInt();
+        } else {
+          avgResult = 0; // Default to 0 if no answers are present
+        }
+        calculateCompleted = true; // Mark calculate as completed
       } else {
         throw Exception('Invalid quiz type: ${widget.quizType}');
       }
+
+      // Perform the API call to update the quiz result
       final response = await http.post(
-        Uri.parse(
-            'https://flask-dyscalculia.onrender.com/quiz_update'), // Replace with your Flask backend URL
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
+        Uri.parse('https://flask-dyscalculia.onrender.com/quiz_update'),
+        headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
           'uid': uid,
           'questionids': questionids,
@@ -85,10 +104,17 @@ class _QuizResultPageState extends State<QuizResultPage> {
       if (response.statusCode != 200) {
         throw Exception('Failed to update quiz results');
       }
+
+      // If all quizzes are completed, send the results
+      if (countingCompleted && coloringCompleted && calculateCompleted) {
+        await sendQuizResults(widget.userAnswers, uid);
+        resetQuizCompletionTracking(); // Reset after sending results
+      }
     } catch (e) {
       print('Error from quiz_result_page.dart: $e');
     }
   }
+
 
   int getQuizId(String quizType) {
     switch (quizType) {
@@ -115,15 +141,25 @@ class _QuizResultPageState extends State<QuizResultPage> {
   Future<void> sendQuizResults(
       Map<String, List<double>> userAnswers, String uid) async {
     try {
+      // Null safety check for userAnswers entries
+      List<double>? countingInput = userAnswers['counting'] ?? [];
+      List<double>? colorInput = userAnswers['coloring'] ?? [];
+      List<double>? calculationInput = userAnswers['calculation'] ?? [];
+
+      // Print logs to check what you're sending
+      print("Counting input: $countingInput");
+      print("Color input: $colorInput");
+      print("Calculation input: $calculationInput");
+
       final response = await http.post(
-        Uri.parse(
-            'https://flask-dyscalculia.onrender.com/predict'), // Replace with your Flask backend URL
+        Uri.parse('https://flask-dyscalculia.onrender.com/predict'), // Replace with your Flask backend URL
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
-          'counting_input': userAnswers['counting'],
-          'color_input': userAnswers['coloring'],
+          'counting_input': countingInput,
+          'color_input': colorInput,
+          'calculation_input': calculationInput,
           'uid': uid,
         }),
       );
@@ -149,6 +185,15 @@ class _QuizResultPageState extends State<QuizResultPage> {
       print('Error from quiz_result_page.dart: $e');
     }
   }
+
+
+  // Reset the tracking variables after prediction
+  void resetQuizCompletionTracking() {
+    countingCompleted = false;
+    coloringCompleted = false;
+    calculateCompleted = false;
+  }
+
 
   int calculateScore() {
     String quizType = widget.quizType;
@@ -245,20 +290,21 @@ class _QuizResultPageState extends State<QuizResultPage> {
                 onPressed: () async {
                   await getUserID1(widget.userAnswers);
                   await getUserID();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(
-                        listfromresult: widget.userAnswers,
+
+                  if (mounted) { // Ensure the widget is still mounted before navigation
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(
+                          listfromresult: widget.userAnswers,
+                        ),
                       ),
-                    ),
-                  ); // Go back to the home page
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                  Color(0xFFEBC272), // Button color EBC272
+                  backgroundColor: Color(0xFFEBC272), // Button color EBC272
                   minimumSize: Size(270, 60),
-                  // Button width 270 and height 45
                 ),
                 child: Text(
                   'Submit Quiz Results',
@@ -269,26 +315,28 @@ class _QuizResultPageState extends State<QuizResultPage> {
                 onPressed: () async {
                   await getUserID1(widget.userAnswers);
                   await getUserID();
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => HomePage(
-                        listfromresult: widget.userAnswers,
+
+                  if (mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HomePage(
+                          listfromresult: widget.userAnswers,
+                        ),
                       ),
-                    ),
-                  ); // Go back to the home page
+                    );
+                  }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor:
-                  Color(0xFFEBC272), // Button color EBC272
-                  minimumSize:
-                  Size(270, 60), // Button width 270 and height 45
+                  backgroundColor: Color(0xFFEBC272),
+                  minimumSize: Size(270, 60),
                 ),
                 child: Text(
                   'Go to Home',
                   style: TextStyle(fontSize: 25, color: Colors.black),
                 ),
               )
+
             ],
           ),
         ),

@@ -69,3 +69,38 @@ final List<Question> questions_count = [
 
   // Add more questions similarly
 ];
+
+final List<Question> questions_calculation = [
+  Question(
+      questionid: 1,
+      questionText: 'lib/images/calculation_img1.png',
+      options: ['7', '8', '11', '10'],
+      correctAnswerIndex: 1,
+      weight: 0.5),
+  Question(
+      questionid: 2,
+      questionText: 'lib/images/calculation_img2.png',
+      options: ['Teddy', 'Duck', 'Basketball', 'Car'],
+      correctAnswerIndex: 2,
+      weight: 1.5),
+  Question(
+      questionid: 3,
+      questionText: 'lib/images/calculation_img1.png',
+      options: ['10', '12', '8', '9'],
+      correctAnswerIndex: 0,
+      weight: 2.5),
+  Question(
+      questionid: 4,
+      questionText: 'lib/images/calculation_img2.png',
+      options: ['6,3,9,8', '3,6,8,9', '8,3,6,9', '9,8,3,6'],
+      correctAnswerIndex: 1,
+      weight: 3.5),
+  Question(
+      questionid: 5,
+      questionText: 'lib/images/calculation_img1.png',
+      options: ['12', '22', '26', '24'],
+      correctAnswerIndex: 3,
+      weight: 4.5),
+
+  // Add more questions similarly
+];

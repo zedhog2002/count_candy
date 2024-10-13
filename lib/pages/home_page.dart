@@ -7,13 +7,15 @@ import 'package:untitled1/components/quiztype_button.dart';
 import 'package:untitled1/pages/login_page.dart';
 import 'quiz_page.dart';
 import 'package:untitled1/data/quiz_data.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:untitled1/pages/result_history_page.dart';
 import 'package:untitled1/pages/profile_page.dart'; // Import the ProfilePage
 import 'package:untitled1/pages/login_page.dart';
-import 'package:untitled1/pages/login_page.dart';
 import 'package:untitled1/pages/profile_page.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:carousel_slider/carousel_controller.dart'; // Import controller only from carousel_slider
+
+
 
 class HomePage extends StatelessWidget {
   dynamic listfromresult;
@@ -256,9 +258,9 @@ class HomePage extends StatelessWidget {
                               percent: (listfromresult["counting"]
                                   ?.fold(0, (a, b) => a + b) ??
                                   0) /
-                                  12.5,
+                                  5,
                               center: Text(
-                                "${((listfromresult["counting"]?.fold(0, (a, b) => a + b) ?? 0) / 12.5 * 100).toStringAsFixed(2)}%",
+                                "${((listfromresult["counting"]?.fold(0, (a, b) => a + b) ?? 0) / 5 * 100).toStringAsFixed(2)}%",
                                 style: TextStyle(fontSize: 16.0),
                               ),
                               progressColor: Color(0xFFEBC272),
@@ -473,9 +475,9 @@ class HomePage extends StatelessWidget {
                               percent: (listfromresult["coloring"]
                                   ?.fold(0, (a, b) => a + b) ??
                                   0) /
-                                  12.5,
+                                  5,
                               center: Text(
-                                "${((listfromresult["coloring"]?.fold(0, (a, b) => a + b) ?? 0) / 12.5 * 100).toStringAsFixed(2)}%",
+                                "${((listfromresult["coloring"]?.fold(0, (a, b) => a + b) ?? 0) / 5 * 100).toStringAsFixed(2)}%",
                                 style: TextStyle(fontSize: 16.0),
                               ),
                               progressColor: Color(0xFFEBC272),
@@ -691,9 +693,9 @@ class HomePage extends StatelessWidget {
                               percent: (listfromresult["calculate"]
                                   ?.fold(0, (a, b) => a + b) ??
                                   0) /
-                                  12.5,
+                                  5,
                               center: Text(
-                                "${((listfromresult["calculate"]?.fold(0, (a, b) => a + b) ?? 0) / 12.5 * 100).toStringAsFixed(2)}%",
+                                "${((listfromresult["calculate"]?.fold(0, (a, b) => a + b) ?? 0) / 5 * 100).toStringAsFixed(2)}%",
                                 style: TextStyle(fontSize: 16.0),
                               ),
                               progressColor: Color(0xFFEBC272),
@@ -840,7 +842,7 @@ class HomePage extends StatelessWidget {
                     ),
                     SizedBox(height: 5),
                     Text(
-                      'Hey champ! step into a world of wonder! Join our Quiz Wizards, where learning feels like play. Embrace fun challenges, and let your smiles light the way to knowledge and excitement!',
+                      'Hey champ! step into a world of wonder! Join our Quiz Wizards, where learning feels like play. Embrace fun challenges, and let your smiles light the way to knowledge and excitement!',
                       style: TextStyle(
                           fontFamily: AutofillHints.birthday,
                           fontSize: 12.0,
@@ -884,7 +886,7 @@ class HomePage extends StatelessWidget {
                             QuizTypeButton(
                               button_color: Color(0xFFD4DDFF),
                               button_text: 'Calculation',
-                              questions: questions_color,
+                              questions: questions_calculation,
                               quizType: 'calculate',
                               buttonImage:
                               'lib/images/calculation_button_img.png',
