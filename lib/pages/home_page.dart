@@ -60,7 +60,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> fetchLastAttemptData() async {
     if (globalUid == null) return; // Ensure UID is available
-    String url = 'http://127.0.0.1:8000/result_history';
+    String url = '$apiUrl/result_history';
     try {
       var response = await http.post(
         Uri.parse(url),
@@ -101,7 +101,7 @@ class _HomePageState extends State<HomePage> {
 
   // Method to fetch user results when history button is clicked
   Future<void> getResults(BuildContext context) async {
-    String url = 'http://127.0.0.1:8000/result_history';
+    String url = '$apiUrl/result_history';
     try {
       var response = await http.post(
         Uri.parse(url),
@@ -393,6 +393,7 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             QuizTypeButton(
               button_color: Color(0xFFCFFFDF),
@@ -411,6 +412,7 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
             QuizTypeButton(
               button_color: Color(0xFFD4DDFF),
@@ -419,7 +421,6 @@ class _HomePageState extends State<HomePage> {
               quizType: 'calculate',
               buttonImage: 'lib/images/calculation_button_img.png',
             ),
-            SizedBox(width: 8),
             buildResultHistoryButton(context),
           ],
         ),
@@ -429,8 +430,8 @@ class _HomePageState extends State<HomePage> {
 
   Widget buildResultHistoryButton(BuildContext context) {
     return Container(
-      width: 150,
-      height: 150,
+      width: 145,
+      height: 145,
       decoration: BoxDecoration(
         color: Color(0xFF373737),
         borderRadius: BorderRadius.circular(15),

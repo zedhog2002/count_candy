@@ -25,8 +25,8 @@ class QuizTypeButton extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SizedBox(
-        width: 150,
-        height: 150,
+        width: 145,
+        height: 145,
         child: ElevatedButton(
           style: ElevatedButton.styleFrom(
             padding: EdgeInsets.zero,

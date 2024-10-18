@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'globals.dart'; // Import your global file
-import 'package:untitled1/components/my_textfield.dart';
-import 'package:untitled1/pages/home_page.dart';
+import '../components/my_textfield.dart';
+import 'globals.dart';
+import 'home_page.dart'; // Import your global file
 
 class UserDetailsPage extends StatefulWidget {
   final Function()? onDetailsSubmitted;
@@ -32,7 +32,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
 
       // Send the profile data to the FastAPI server
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/profile'), // Replace with your FastAPI backend URL
+        Uri.parse('$apiUrl/profile'), // Replace with your FastAPI backend URL
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

@@ -7,6 +7,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login_page.dart';
 
+const String apiUrl = 'http://10.0.2.2:8000';
+
 String? globalUid; // Global variable to store the current user's UID
 
 // Function to log the user in by setting the global UID and storing it in SharedPreferences

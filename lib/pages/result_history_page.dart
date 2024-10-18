@@ -34,8 +34,8 @@ class _ResultHistoryPageState extends State<ResultHistoryPage> {
 
   Future<void> fetchPredictions() async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/prediction_tables'),
-      body: json.encode({'uid': globalUid}), // Pass the uid in the body
+      Uri.parse('$apiUrl/prediction_tables'),
+      body: json.encode({'uid': globalUid}),
       headers: {"Content-Type": "application/json"},
     );
 
@@ -44,7 +44,6 @@ class _ResultHistoryPageState extends State<ResultHistoryPage> {
       final predictedValues = jsonResponse['predicted_values'] ?? {};
 
       setState(() {
-        // Convert the predicted values to a list of doubles
         predictions = List<double>.from(predictedValues.values.map((value) => value.toDouble()));
       });
     } else {
@@ -52,10 +51,9 @@ class _ResultHistoryPageState extends State<ResultHistoryPage> {
     }
   }
 
-
   Future<void> fetchResults() async {
     final response = await http.post(
-      Uri.parse('http://127.0.0.1:8000/result_history'),
+      Uri.parse('$apiUrl/result_history'),
       body: json.encode({'uid': globalUid}),
       headers: {"Content-Type": "application/json"},
     );
@@ -75,25 +73,22 @@ class _ResultHistoryPageState extends State<ResultHistoryPage> {
 
   Map<String, List<Map<String, dynamic>>> groupResultsByQuiz() {
     return {
-      'Counting': countingResults
-          .map((result) => {'average_result': result})
-          .toList(),
-      'Coloring': coloringResults
-          .map((result) => {'average_result': result})
-          .toList(),
-      'Calculation': calculationResults
-          .map((result) => {'average_result': result})
-          .toList(),
+      'Counting': countingResults.map((result) => {'average_result': result}).toList(),
+      'Coloring': coloringResults.map((result) => {'average_result': result}).toList(),
+      'Calculation': calculationResults.map((result) => {'average_result': result}).toList(),
     };
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Color(0xFFF6F6F6),
-        title: Text('Result History'),
+        title: Text(
+          'Result History',
+          style: TextStyle(color: Colors.black),
+        ),
+        iconTheme: IconThemeData(color: Colors.black),
         flexibleSpace: Container(
           decoration: BoxDecoration(
             image: DecorationImage(
@@ -107,37 +102,42 @@ class _ResultHistoryPageState extends State<ResultHistoryPage> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Container(
-          decoration: BoxDecoration(
-            color: Color(0xFFF6F6F6),
-            image: DecorationImage(
-              image: AssetImage('lib/images/background.png'),
-              fit: BoxFit.cover,
-              colorFilter: ColorFilter.mode(
-                Colors.white.withOpacity(0.1),
-                BlendMode.dstATop,
+      body: ConstrainedBox(
+        constraints: BoxConstraints(
+          minHeight: MediaQuery.of(context).size.height, // Set the minimum height to the screen height
+        ),
+        child: SingleChildScrollView(
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+            decoration: BoxDecoration(
+              color: Color(0xFFF6F6F6),
+              image: DecorationImage(
+                image: AssetImage('lib/images/background.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.white.withOpacity(0.1),
+                  BlendMode.dstATop,
+                ),
               ),
             ),
-          ),
-          child: SingleChildScrollView(
             child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                SizedBox(height: 20),
                 Container(
                   alignment: Alignment.centerLeft,
-                  padding: EdgeInsets.only(left: 50, top: 16, bottom: 16),
+                  padding: EdgeInsets.only(left: 16, top: 16, bottom: 16),
                   child: Text(
                     'Predictions',
                     style: TextStyle(
-                      fontSize: 32,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
                       fontFamily: 'Assistant',
                     ),
                   ),
                 ),
                 if (predictions.isNotEmpty)
                   Container(
-                    width: 400,
+                    width: double.infinity,
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
@@ -150,114 +150,112 @@ class _ResultHistoryPageState extends State<ResultHistoryPage> {
                         ),
                       ],
                     ),
-                    child: SfCartesianChart(
-                      primaryXAxis: CategoryAxis(title: AxisTitle(text: 'Prediction')),
-                      primaryYAxis: NumericAxis(title: AxisTitle(text: 'Value')),
-                      series: [
-                        LineSeries<double, String>(
-                          dataSource: predictions,
-                          xValueMapper: (prediction, index) => 'Prediction ${index + 1}',
-                          yValueMapper: (prediction, _) => prediction,
-                          markerSettings: MarkerSettings(
-                            isVisible: true,
+                    child: Padding(
+                      padding: EdgeInsets.all(8),
+                      child: SfCartesianChart(
+                        primaryXAxis: CategoryAxis(title: AxisTitle(text: 'Prediction')),
+                        primaryYAxis: NumericAxis(title: AxisTitle(text: 'Value')),
+                        series: [
+                          LineSeries<double, String>(
+                            dataSource: predictions,
+                            xValueMapper: (prediction, index) => 'P${index + 1}',
+                            yValueMapper: (prediction, _) => prediction,
+                            markerSettings: MarkerSettings(
+                              isVisible: true,
+                              color: Colors.orange,
+                            ),
+                            color: Colors.orange,
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                    ),
+                  )
+                else
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Text(
+                      'Attempt all quizzes to view predictions',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.redAccent,
+                      ),
+                      textAlign: TextAlign.center,
                     ),
                   ),
-                SizedBox(height: 35),
+                SizedBox(height: 30),
                 Text(
                   'Your results are like stepping stones in \nthe playful garden of knowledge. Keep leaping, \nlittle explorer!',
                   textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
                     fontFamily: 'Assistant',
                   ),
                 ),
-                SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => IndividualQuizResultsPage(
-                          quizResults: groupResultsByQuiz(),
-                          quizType: 'Counting', // Passing the quiz type
-                          quizTitle: 'Counting Quiz', // Passing the quiz title
-                        ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: Size(270, 46),
-                    backgroundColor: Color(0xFFEBC272),
-                  ),
-                  child: Text(
-                    'Counting Quiz',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                SizedBox(height: 25),
+                _buildQuizButton(
+                  context,
+                  'Counting Quiz',
+                  'Counting',
+                  'Counting Quiz',
                 ),
                 SizedBox(height: 15),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => IndividualQuizResultsPage(
-                          quizResults: groupResultsByQuiz(),
-                          quizType: 'Coloring', // Passing the quiz type
-                          quizTitle: 'Coloring Quiz', // Passing the quiz title
-                        ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: Size(270, 46),
-                    backgroundColor: Color(0xFFEBC272),
-                  ),
-                  child: Text(
-                    'Coloring Quiz',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                _buildQuizButton(
+                  context,
+                  'Coloring Quiz',
+                  'Coloring',
+                  'Coloring Quiz',
                 ),
                 SizedBox(height: 15),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => IndividualQuizResultsPage(
-                          quizResults: groupResultsByQuiz(),
-                          quizType: 'Calculation', // Passing the quiz type
-                          quizTitle: 'Calculation Quiz', // Passing the quiz title
-                        ),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: Size(270, 46),
-                    backgroundColor: Color(0xFFEBC272),
-                  ),
-                  child: Text(
-                    'Calculation Quiz',
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                _buildQuizButton(
+                  context,
+                  'Calculation Quiz',
+                  'Calculation',
+                  'Calculation Quiz',
                 ),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuizButton(
+      BuildContext context,
+      String buttonText,
+      String quizType,
+      String quizTitle,
+      ) {
+    return ElevatedButton(
+      onPressed: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => IndividualQuizResultsPage(
+              quizResults: groupResultsByQuiz(),
+              quizType: quizType,
+              quizTitle: quizTitle,
+            ),
+          ),
+        );
+      },
+      style: ElevatedButton.styleFrom(
+        fixedSize: Size(270, 46),
+        backgroundColor: Color(0xFFEBC272),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        elevation: 4,
+        shadowColor: Colors.black.withOpacity(0.25),
+      ),
+      child: Text(
+        buttonText,
+        style: TextStyle(
+          color: Colors.black,
+          fontSize: 24,
+          fontWeight: FontWeight.bold,
         ),
       ),
     );

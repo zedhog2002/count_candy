@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import '../models/answers.dart';
 import '../models/question.dart';
 import 'quiz_result_page.dart'; // New screen for quiz result
 
-import 'package:untitled1/models/answers.dart';
 
 class QuizPage extends StatefulWidget {
   final List<Question> questions;

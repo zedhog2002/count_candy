@@ -34,7 +34,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/register'),
+        Uri.parse('$apiUrl/register'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -42,6 +42,7 @@ class _RegisterPageState extends State<RegisterPage> {
           'email': emailController.text,
           'username': usernameController.text,
           'password': passwordController.text,
+          'confirm_password': passwordController.text
         }),
       );
 

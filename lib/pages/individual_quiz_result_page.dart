@@ -9,19 +9,22 @@ class IndividualQuizResultsPage extends StatelessWidget {
   const IndividualQuizResultsPage({
     Key? key,
     required this.quizResults,
-    required this.quizType, // The key for the specific quiz (Counting, Coloring, Calculation)
-    required this.quizTitle, // The title for the quiz (e.g., Counting Quiz)
+    required this.quizType,
+    required this.quizTitle,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // Fetch results for the selected quiz type
+    // Fetch results for the selected quiz type, use original order for graph
     final resultsForQuiz = quizResults[quizType] ?? [];
+    final totalAttempts = resultsForQuiz.length; // Track the total number of attempts
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('$quizTitle Results'),
+        title: Text('$quizTitle Results', style: TextStyle(color: Colors.black)),
         backgroundColor: Color(0xFFF6F6F6),
+        iconTheme: IconThemeData(color: Colors.black),
+        elevation: 0,
       ),
       body: Container(
         decoration: BoxDecoration(
@@ -35,107 +38,140 @@ class IndividualQuizResultsPage extends StatelessWidget {
             ),
           ),
         ),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: Text(
-                  '$quizTitle',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20),
+              child: Text(
+                '$quizTitle Results Overview',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
+              ),
+            ),
+            // Graph showing average scores for the selected quiz
+            Container(
+              padding: EdgeInsets.all(16),
+              margin: EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black12,
+                    blurRadius: 6,
+                    offset: Offset(0, 3),
                   ),
-                ),
+                ],
               ),
-              // Graph showing average scores for the selected quiz
-              Container(
-                height: 252,
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(15),
+              child: SfCartesianChart(
+                primaryXAxis: CategoryAxis(
+                  title: AxisTitle(text: 'Attempt'),
+                  labelStyle: TextStyle(fontSize: 12),
                 ),
-                child: SfCartesianChart(
-                  primaryXAxis: CategoryAxis(title: AxisTitle(text: 'Attempt')),
-                  primaryYAxis: NumericAxis(title: AxisTitle(text: 'Average Score')),
-                  series: [
-                    LineSeries<Map<String, dynamic>, int>(
-                      dataSource: resultsForQuiz,
-                      xValueMapper: (result, index) => index + 1,
-                      yValueMapper: (result, _) => result['average_result'],
-                      name: '$quizTitle',
-                      markerSettings: MarkerSettings(
-                        isVisible: true,
-                      ),
+                primaryYAxis: NumericAxis(
+                  title: AxisTitle(text: 'Average Score'),
+                  labelStyle: TextStyle(fontSize: 12),
+                ),
+                series: [
+                  LineSeries<Map<String, dynamic>, int>(
+                    dataSource: resultsForQuiz, // Use original order for graph
+                    xValueMapper: (result, index) => index + 1, // Oldest to newest, left to right
+                    yValueMapper: (result, _) => result['average_result'],
+                    name: '$quizTitle',
+                    markerSettings: MarkerSettings(
+                      isVisible: true,
+                      color: Colors.orange,
+                      borderColor: Colors.white,
                     ),
-                  ],
+                    color: Colors.orange,
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: 25),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Attempts Breakdown',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
                 ),
               ),
-              SizedBox(height: 25),
-              // List of each attempt showing the average result
-              Container(
-                width: 286,
-                height: MediaQuery.of(context).size.height - 252 - 70 - AppBar().preferredSize.height,
+            ),
+            SizedBox(height: 10),
+            // Make only the attempts scrollable and the graph stationery
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
                 child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: resultsForQuiz.length,
+                  itemCount: resultsForQuiz.reversed.length, // Reverse for ListView
                   itemBuilder: (context, index) {
-                    final result = resultsForQuiz[index];
+                    final result = resultsForQuiz.reversed.toList()[index]; // Reversed for attempts list
+                    final attemptNumber = totalAttempts - index; // Correct attempt number
                     return Container(
-                      margin: EdgeInsets.only(bottom: 10),
-                      height: 80,
+                      margin: EdgeInsets.only(bottom: 15),
+                      padding: EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(15),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
                       ),
-                      child: Stack(
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Positioned(
-                            top: 15,
-                            left: 10,
-                            child: Container(
-                              height: 20,
-                              width: 95,
-                              decoration: BoxDecoration(
-                                color: Color(0xFF373737),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Center(
+                          Row(
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF373737),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 child: Text(
-                                  'Attempt ${index + 1}',
+                                  'Attempt $attemptNumber',
                                   style: TextStyle(
                                     color: Colors.white,
+                                    fontSize: 16,
                                   ),
                                 ),
                               ),
+                              SizedBox(width: 15),
+                            ],
+                          ),
+                          Container(
+                            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: Color(0xFFF8E191),
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              'Avg. Score: ${result['average_result']}',
+                              style: TextStyle(
+                                fontSize: 16,
+                                color: Colors.black87,
+                              ),
                             ),
                           ),
-                          Positioned(
-                            top: 15,
-                            left: 150,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Color(0xFFF8E191),
-                                borderRadius: BorderRadius.circular(15),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Average Result:\n ${result['average_result']}',
-                                ),
-                              ),
-                            ),
-                          ),
-
                         ],
                       ),
                     );
                   },
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

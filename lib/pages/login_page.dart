@@ -29,7 +29,7 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> loginUser() async {
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/login'),
+        Uri.parse('$apiUrl/login'),
         headers: <String, String>{
           'Content-Type': 'application/json',
         },

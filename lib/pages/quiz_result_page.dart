@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:untitled1/pages/globals.dart';
 import 'dart:convert';
 
 import '../models/answers.dart';
+import 'globals.dart';
 import 'home_page.dart';
 import 'login_page.dart'; // For navigating back to the home page
 
@@ -54,7 +54,7 @@ class _QuizResultPageState extends State<QuizResultPage> {
 
       // Post the quiz results to the FastAPI backend
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/score'),
+        Uri.parse('$apiUrl/score'),
         headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
           'uid': globalUid,
@@ -83,7 +83,7 @@ class _QuizResultPageState extends State<QuizResultPage> {
   Future<void> checkAllQuizzesAndPredict() async {
     try {
       final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/predict'),
+        Uri.parse('$apiUrl/predict'),
         headers: <String, String>{'Content-Type': 'application/json; charset=UTF-8'},
         body: jsonEncode({
           'uid': globalUid,
