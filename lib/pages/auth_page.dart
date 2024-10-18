@@ -1,29 +1,36 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled1/pages/login_page.dart';
-import 'package:untitled1/pages/home_page.dart';
-import 'package:untitled1/pages/login_or_register_page.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
+import 'globals.dart'; // Import the globals file
+import 'home_page.dart';
+import 'login_or_register_page.dart';
+
 
 class AuthPage extends StatelessWidget {
   const AuthPage({super.key});
 
-  //page to check if the user is signed in or not, if signed in: homepage, if not signed in: login page
+// Check if the user is logged in by looking for a stored UID in SharedPreferences
+  Future<bool> checkIfLoggedIn() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? uid = prefs.getString("user_id");
+    return uid != null; // If UID exists, user is logged in
+  }
+
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      //stream that constantly listens if the user has logged in or not
-        body: StreamBuilder<User?>(
-            stream: FirebaseAuth.instance.authStateChanges(),
-            builder: (context, snapshot) {
-              //user is logged in
-              if (snapshot.hasData) {
-                return HomePage();
-              }
-
-              //user is not logged in
-              else {
-                return LoginOrRegisterPage();
-              }
-            }));
+    return FutureBuilder<bool>(
+      future: checkIfLoggedIn(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasData && snapshot.data == true) {
+          loadGlobalUid(); // Load UID into globalUid
+          return HomePage(); // If the user is logged in, navigate to HomePage
+        } else {
+          return LoginOrRegisterPage(); // Otherwise, show login/register page
+        }
+      },
+    );
   }
 }

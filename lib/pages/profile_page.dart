@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+
+import 'package:untitled1/pages/globals.dart';
 
 class ProfilePage extends StatefulWidget {
   ProfilePage({Key? key}) : super(key: key);
@@ -24,13 +25,14 @@ class _ProfilePageState extends State<ProfilePage> {
 
   Future<void> fetchUserDetails() async {
     try {
-      // Fetch the UID using the getUserID method
-      _uid = await getUserID(); // Store user ID
-      print("User UID: $_uid");
 
-      // Use the retrieved UID to get user details
-      final response = await http
-          .get(Uri.parse('https://flask-dyscalculia.onrender.com/get_user_details/$_uid'));
+
+      // Make the POST request to fetch user details
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/user_details'),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({'uid': globalUid}),
+      );
       print(response.statusCode);
 
       if (response.statusCode == 200) {
@@ -52,13 +54,7 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
-  // Modified method to return the UID
-  Future<String> getUserID() async {
-    // Retrieve the currently signed-in user
-    User? user = FirebaseAuth.instance.currentUser;
-    String uid = user?.uid ?? ""; // Fetch the UID
-    return uid;
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -99,27 +95,6 @@ class _ProfilePageState extends State<ProfilePage> {
               SizedBox(height: 16),
               Column(
                 children: [
-                  // Container(
-                  //   width: 270,
-                  //   decoration: BoxDecoration(
-                  //       borderRadius: BorderRadius.circular(15),
-                  //       color: Color(0xFFEBC272)),
-                  //   child: Column(
-                  //     mainAxisAlignment: MainAxisAlignment.start,
-                  //     crossAxisAlignment: CrossAxisAlignment.start,
-                  //     children: [
-                  //       Text(
-                  //         'User ID:\n',
-                  //         style: TextStyle(fontSize: 12),
-                  //         textAlign: TextAlign.left,
-                  //       ),
-                  //       Text(
-                  //         '$_uid',
-                  //         style: TextStyle(fontSize: 20),
-                  //       )
-                  //     ],
-                  //   ),
-                  // ),
                   Container(
                     width: 270,
                     decoration: BoxDecoration(
@@ -189,7 +164,7 @@ class _ProfilePageState extends State<ProfilePage> {
                           style: TextStyle(fontSize: 12),
                         ),
                         Text(
-                          '${_userDetails['parent_phone_number'] ?? 'N/A'}',
+                          '${_userDetails['parent_contact'] ?? 'N/A'}',
                           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                         )
                       ],

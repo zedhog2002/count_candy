@@ -1,12 +1,8 @@
-// import 'dart:ffi';
-
 import 'package:flutter/material.dart';
-import 'package:untitled1/components/my_button.dart';
-import 'package:untitled1/components/my_textfield.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'globals.dart'; // Import your global file
+import 'package:untitled1/components/my_textfield.dart';
 import 'package:untitled1/pages/home_page.dart';
 
 class UserDetailsPage extends StatefulWidget {
@@ -20,37 +16,35 @@ class UserDetailsPage extends StatefulWidget {
 class _UserDetailsPageState extends State<UserDetailsPage> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController ageController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
   final TextEditingController parentsNameController = TextEditingController();
-  final TextEditingController parentsPhoneNumber = TextEditingController();
+  final TextEditingController parentsPhoneNumberController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
+  final TextEditingController preferredSubjectController = TextEditingController();
 
-  Future<void> getUserID(String name, int age, String parent_name,
-      int parent_phone_number, String Address) async {
-    // Retrieve the currently signed-in user
-    User? user = FirebaseAuth.instance.currentUser;
-    String uid = user?.uid ?? ""; // Fetch the UID
-    print("User UID: $uid");
-    // print(name);
-    await save_user_details1(
-        uid, name, age, parent_name, parent_phone_number, Address);
-  }
-
-  Future<void> save_user_details1(String uid, String name, int age,
-      String parent_name, int parent_phone_number, String Address) async {
+  Future<void> saveUserDetails(
+      String childName, int childAge, String childGender, String parentName, String parentPhone, String address, String preferredSubject) async {
     try {
+      // Use the global UID instead of fetching it from SharedPreferences
+      if (globalUid == null || globalUid!.isEmpty) {
+        throw Exception('User UID not found. Please log in again.');
+      }
+
+      // Send the profile data to the FastAPI server
       final response = await http.post(
-        Uri.parse(
-            'https://flask-dyscalculia.onrender.com/save_user_details'), // Replace with your Flask backend URL
+        Uri.parse('http://127.0.0.1:8000/profile'), // Replace with your FastAPI backend URL
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
         body: jsonEncode({
-          'uid': uid,
-          "child_name": name,
-          "child_age": age,
-          "parent_name": parent_name,
-          "parent_phone_number": parent_phone_number,
-          "address": Address,
+          'uid': globalUid, // Use the globalUid directly
+          "child_name": childName,
+          "child_age": childAge,
+          "child_gender": childGender,
+          "parent_name": parentName,
+          "parent_contact": parentPhone,
+          "address": address,
+          "preferred_subject": preferredSubject,
         }),
       );
 
@@ -58,7 +52,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       print('Response body: ${response.body}');
 
       if (response.statusCode != 200) {
-        throw Exception('Failed to register user on the server');
+        throw Exception('Failed to save profile data on the server');
       }
     } catch (e) {
       print('Error while saving user details: $e');
@@ -87,8 +81,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           color: Color(0xFFF6F6F6), // Background color
           image: DecorationImage(
             image: AssetImage('lib/images/background.png'), // Image asset
-            fit:
-            BoxFit.cover, // Adjusts the image to cover the entire container
+            fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
               Colors.white.withOpacity(0.1), // 10% opacity (90% transparent)
               BlendMode.dstATop, // Apply the opacity to the image
@@ -111,6 +104,11 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 hintText: 'Age',
                 obscureText: false,
               ),
+              MyTextField(
+                controller: genderController,
+                hintText: 'Gender',
+                obscureText: false,
+              ),
               const SizedBox(height: 20),
               MyTextField(
                 controller: parentsNameController,
@@ -119,7 +117,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
               ),
               const SizedBox(height: 20),
               MyTextField(
-                controller: parentsPhoneNumber,
+                controller: parentsPhoneNumberController,
                 hintText: "Parents' Phone Number",
                 obscureText: false,
               ),
@@ -129,26 +127,31 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 hintText: 'Address',
                 obscureText: false,
               ),
+              MyTextField(
+                controller: preferredSubjectController,
+                hintText: 'Preferred Subject',
+                obscureText: false,
+              ),
               const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(
-                        Colors.black), // Set background color to black
-                    foregroundColor: MaterialStateProperty.all<Color>(
-                        Colors.white), // Set text color to white
-                    minimumSize: MaterialStateProperty.all<Size>(
-                        Size(350.0, 50)), // Set width to 200 and height to 40
-                    elevation: MaterialStateProperty.all<double>(
-                        20.0), // Add shadow with elevation
+                    backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                    foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                    minimumSize: MaterialStateProperty.all<Size>(Size(350.0, 50)),
+                    elevation: MaterialStateProperty.all<double>(20.0),
                   ),
-                  onPressed: () {
-                    getUserID(
+                  onPressed: () async {
+                    // Save user profile data
+                    await saveUserDetails(
                       nameController.text,
                       int.tryParse(ageController.text) ?? 0,
+                      genderController.text,
                       parentsNameController.text,
-                      int.tryParse(parentsPhoneNumber.text) ?? 0,
+                      parentsPhoneNumberController.text,
                       addressController.text,
+                      preferredSubjectController.text,
+
                     );
                     Navigator.push(
                       context,
@@ -156,7 +159,6 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                         builder: (context) => HomePage(),
                       ),
                     );
-                    // You can add logic to handle the submission
                   },
                   child: Text('Submit details'),
                 ),
@@ -166,18 +168,17 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
         ),
       ),
       floatingActionButton: SizedBox(
-        width: 100.0, // Set the desired width
-        height: 100.0, // Set the desired height
+        width: 100.0,
+        height: 100.0,
         child: FloatingActionButton(
           onPressed: () {
             Navigator.pop(context); // Close the UserDetailsPage
           },
           tooltip: 'Back to Home',
-          backgroundColor: Color(0xFFEBC272), // Change background color to red
-          elevation: 4.0, // Increase elevation for a larger appearance
+          backgroundColor: Color(0xFFEBC272),
+          elevation: 4.0,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(
-                20.0), // Adjust the border radius for a circular button
+            borderRadius: BorderRadius.circular(20.0),
           ),
           child: Transform.scale(scale: 1.8, child: Icon(Icons.home)),
         ),

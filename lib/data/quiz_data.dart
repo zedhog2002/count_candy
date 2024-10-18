@@ -39,7 +39,7 @@ final List<Question> questions_count = [
   Question(
       questionid: 1,
       questionText: 'lib/images/ques_1_count.png',
-      options: ['7', '8', '11', '10'],
+      options: ['7', '15', '11', '10'],
       correctAnswerIndex: 1,
       weight: 0.5),
   Question(
@@ -73,32 +73,32 @@ final List<Question> questions_count = [
 final List<Question> questions_calculation = [
   Question(
       questionid: 1,
-      questionText: 'lib/images/calculation_img1.png',
+      questionText: 'lib/images/ques_1_calculation.png',
       options: ['7', '8', '11', '10'],
       correctAnswerIndex: 1,
       weight: 0.5),
   Question(
       questionid: 2,
-      questionText: 'lib/images/calculation_img2.png',
-      options: ['Teddy', 'Duck', 'Basketball', 'Car'],
+      questionText: 'lib/images/ques_2_calculation.png',
+      options: ['44', '30', '35', '20'],
       correctAnswerIndex: 2,
       weight: 1.5),
   Question(
       questionid: 3,
-      questionText: 'lib/images/calculation_img1.png',
-      options: ['10', '12', '8', '9'],
+      questionText: 'lib/images/ques_3_calculation.png',
+      options: ['3', '6', '12', '2'],
       correctAnswerIndex: 0,
       weight: 2.5),
   Question(
       questionid: 4,
-      questionText: 'lib/images/calculation_img2.png',
-      options: ['6,3,9,8', '3,6,8,9', '8,3,6,9', '9,8,3,6'],
+      questionText: 'lib/images/ques_4_calculation.png',
+      options: ['7', '5', '4', '2'],
       correctAnswerIndex: 1,
       weight: 3.5),
   Question(
       questionid: 5,
-      questionText: 'lib/images/calculation_img1.png',
-      options: ['12', '22', '26', '24'],
+      questionText: 'lib/images/ques_5_calculation.png',
+      options: ['4', '5', '2', '1'],
       correctAnswerIndex: 3,
       weight: 4.5),
 

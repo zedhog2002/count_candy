@@ -1,71 +1,71 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled1/components/my_button.dart';
-import 'package:untitled1/components/my_textfield.dart';
-import 'package:untitled1/components/square_tile.dart';
-import 'package:untitled1/pages/home_page.dart';
-import 'package:untitled1/pages/register_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'globals.dart'; // Import the global file
+
+
+import '../components/my_button.dart';
+import '../components/my_textfield.dart';
+import 'home_page.dart';
+import 'register_page.dart';
+
+
 
 class LoginPage extends StatefulWidget {
   final Function()? onTap;
+
   LoginPage({super.key, this.onTap});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  //text editing controllers
   final emailController = TextEditingController();
-
   final passwordController = TextEditingController();
 
-  // sign user in method(function for onTap property and onTap prop for my_button)
-  void signUserIn() async {
-    //show loading circle
-    showDialog(
-        context: context,
-        builder: (context) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        });
-
-    //try signin
+  // Function to handle login
+  Future<void> loginUser() async {
     try {
-      await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passwordController.text,
+      final response = await http.post(
+        Uri.parse('http://127.0.0.1:8000/login'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'username': emailController.text,
+          'password': passwordController.text,
+        }),
       );
-      //pop the circle
-      Navigator.pop(context);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) =>
-                HomePage()), // Replace 'RegisterPage' with the actual name of your register page class
-      );
-    } on FirebaseAuthException catch (e) {
-      //pop the circle
-      Navigator.pop(context);
-      //show error message
-      showErrorMessage(e.code);
+      if (response.statusCode == 200) {
+        // Extract user data
+        final data = jsonDecode(response.body);
+        final userId = data['uid'];
+        print('User ID from backend: $userId');
+
+        // Store userId in SharedPreferences and set it globally
+        await setGlobalUid(userId); // Store in SharedPreferences and set global UID
+
+        // Navigate to HomePage
+        Navigator.pushReplacement(
+            context, MaterialPageRoute(builder: (context) => HomePage()));
+      } else {
+        // Show error
+        showErrorMessage('Login failed. Check credentials.');
+      }
+    } catch (e) {
+      showErrorMessage('An error occurred. Please try again.');
     }
   }
 
-  //show error message
+  // Error display
   void showErrorMessage(String message) {
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Center(
-            child: Text(
-              message,
-              style: const TextStyle(color: Colors.black),
-            ),
-          ),
+          title: Text(message),
         );
       },
     );
@@ -93,15 +93,12 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const SizedBox(
-                      height: 180,
-                    ),
+                    const SizedBox(height: 180),
                     Container(
                       width: screenWidth,
                       padding: EdgeInsets.fromLTRB(0, 30, 0, 30.0),
                       decoration: BoxDecoration(
                         color: Color(0xFFEBC272),
-
                         border: Border.all(color: Colors.white),
                       ),
                       child: Column(
@@ -113,8 +110,8 @@ class _LoginPageState extends State<LoginPage> {
                               const SizedBox(width: 30),
                               Image.asset(
                                 'lib/images/App_logo.png',
-                                width: 75, // Adjust the width as needed
-                                height: 75, // Adjust the height as needed
+                                width: 75,
+                                height: 75,
                               ),
                               const SizedBox(width: 20),
                               Text(
@@ -127,9 +124,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ],
                           ),
-                          const SizedBox(
-                            height: 15,
-                          ),
+                          const SizedBox(height: 15),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(25, 0, 0, 0),
                             child: Text(
@@ -165,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 25),
                           MyButton(
                             text: "Sign In",
-                            onTap: signUserIn,
+                            onTap: loginUser,
                           ),
                           const SizedBox(height: 15),
                           Row(
@@ -206,5 +201,12 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
   }
 }
