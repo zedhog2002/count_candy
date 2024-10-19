@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login_page.dart';
 
-const String apiUrl = 'https://count-candy-backend.onrender.com';
+const String apiUrl = 'https://conscious-claudette-krssn-7b763b7e.koyeb.app';
 
 String? globalUid; // Global variable to store the current user's UID
 
