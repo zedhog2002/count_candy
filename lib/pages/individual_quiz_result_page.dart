@@ -85,7 +85,6 @@ class IndividualQuizResultsPage extends StatelessWidget {
                     markerSettings: MarkerSettings(
                       isVisible: true,
                       color: Colors.orange,
-                      borderColor: Colors.white,
                     ),
                     color: Colors.orange,
                   ),

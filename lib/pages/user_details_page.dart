@@ -21,6 +21,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   final TextEditingController parentsPhoneNumberController = TextEditingController();
   final TextEditingController addressController = TextEditingController();
   final TextEditingController preferredSubjectController = TextEditingController();
+  String? selectedGender;
 
   Future<void> saveUserDetails(
       String childName, int childAge, String childGender, String parentName, String parentPhone, String address, String preferredSubject) async {
@@ -104,11 +105,47 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 hintText: 'Age',
                 obscureText: false,
               ),
-              MyTextField(
-                controller: genderController,
-                hintText: 'Gender',
-                obscureText: false,
+              const SizedBox(height: 20),
+
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.8),
+                    borderRadius: BorderRadius.circular(45),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color.fromARGB(255, 101, 101, 101).withOpacity(0.5),
+                        blurRadius: 5,
+                        spreadRadius: 2,
+                        offset: Offset(6, 6),
+                      ),
+                    ],
+                  ),
+                  child: DropdownButtonFormField<String>(
+                    value: selectedGender,
+                    decoration: InputDecoration(
+                      border: InputBorder.none, // Remove the border to match the TextField style
+                      contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjust padding to match the TextField
+                    ),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        selectedGender = newValue;
+                      });
+                    },
+                    items: <String>['Male', 'Female', 'Prefer not to say'].map<DropdownMenuItem<String>>((String value) {
+                      return DropdownMenuItem<String>(
+                        value: value,
+                        child: Text(value),
+                      );
+                    }).toList(),
+                    icon: Icon(Icons.arrow_drop_down, color: Colors.grey), // Add an icon if needed
+                  ),
+                ),
               ),
+
+
               const SizedBox(height: 20),
               MyTextField(
                 controller: parentsNameController,
@@ -127,6 +164,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                 hintText: 'Address',
                 obscureText: false,
               ),
+              const SizedBox(height: 20),
               MyTextField(
                 controller: preferredSubjectController,
                 hintText: 'Preferred Subject',
@@ -146,7 +184,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
                     await saveUserDetails(
                       nameController.text,
                       int.tryParse(ageController.text) ?? 0,
-                      genderController.text,
+                      selectedGender ?? 'Not specified',
                       parentsNameController.text,
                       parentsPhoneNumberController.text,
                       addressController.text,
@@ -167,6 +205,7 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           ),
         ),
       ),
+      
       floatingActionButton: SizedBox(
         width: 100.0,
         height: 100.0,

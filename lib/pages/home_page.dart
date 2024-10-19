@@ -120,6 +120,14 @@ class _HomePageState extends State<HomePage> {
         );
       } else {
         print("Failed to load results from getresults.");
+
+        // Navigate to ResultHistoryPage even if no results are available
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ResultHistoryPage(uid: globalUid),
+          ),
+        );
       }
     } catch (e) {
       print("Error: $e");

@@ -54,7 +54,7 @@ class _RegisterPageState extends State<RegisterPage> {
         await setGlobalUid(userId); // Store in SharedPreferences and set global UID
 
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => HomePage()));
+            context, MaterialPageRoute(builder: (context) => UserDetailsPage()));
       } else {
         showErrorMessage('Failed to register.');
       }
