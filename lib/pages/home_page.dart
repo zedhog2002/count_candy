@@ -39,7 +39,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> initializeApp() async {
-    await loadGlobalUid(); // Wait for global UID to be loaded
+    await loadGlobalUid();
+    print("uid:{$globalUid}");// Wait for global UID to be loaded
     fetchLastAttemptData(); // Fetch the last attempt data only after loading the UID
   }
 
@@ -62,6 +63,7 @@ class _HomePageState extends State<HomePage> {
     if (globalUid == null) return; // Ensure UID is available
     String url = '$apiUrl/result_history';
     try {
+      print("{$globalUid}");
       var response = await http.post(
         Uri.parse(url),
         headers: {"Content-Type": "application/json"},
@@ -242,16 +244,18 @@ class _HomePageState extends State<HomePage> {
                 buildQuizResult("Calculation", calculationResult, 5),
               ],
               options: CarouselOptions(
-                height: 200.0,
+                height: MediaQuery.of(context).size.height * 0.25,  // Responsive height (25% of screen height)
                 enlargeCenterPage: true,
                 autoPlay: true,
-                aspectRatio: 16 / 9,
+                aspectRatio: MediaQuery.of(context).size.width / MediaQuery.of(context).size.height,  // Responsive aspect ratio
                 autoPlayCurve: Curves.fastOutSlowIn,
                 enableInfiniteScroll: true,
                 autoPlayAnimationDuration: Duration(milliseconds: 800),
-                viewportFraction: 0.8,
+                viewportFraction: 0.8,  // Viewport fraction to control the size of items in the carousel
               ),
             ),
+
+
             SizedBox(height: 20),
             Padding(
               padding: const EdgeInsets.fromLTRB(20.0, 0, 20.0, 0),
@@ -294,7 +298,7 @@ class _HomePageState extends State<HomePage> {
   Widget buildQuizResult(String quizType, int? result, int totalQuestions) {
     int correct = ((result ?? 0) * 5 / 100).round(); // Convert the percentage to an integer value
     int incorrect = 5 - correct;
-
+    double screenWidth = MediaQuery.of(context).size.width;
 
     return Container(
       decoration: BoxDecoration(
@@ -308,24 +312,25 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+
       child: Stack(
         children: [
           Row(
             children: [
-              const SizedBox(width: 15),
+              SizedBox(width: screenWidth * 0.04), // Dynamic width
               Padding(
-                padding: const EdgeInsets.fromLTRB(20.0, 0, 0, 0),
+                padding: EdgeInsets.fromLTRB(screenWidth * 0.05, 0, 0, 0), // Responsive padding
                 child: Column(
                   children: [
-                    const SizedBox(height: 25),
+                    SizedBox(height: screenWidth * 0.06), // Dynamic height
                     buildQuizHeader(quizType),
-                    const SizedBox(height: 12),
+                    SizedBox(height: screenWidth * 0.03), // Dynamic height
                     buildQuizStats(correct, incorrect, totalQuestions),
                   ],
                 ),
               ),
-              const SizedBox(width: 25),
-              buildCircularPercentIndicator(correct*20, totalQuestions),
+              SizedBox(width: screenWidth * 0.06), // Dynamic width
+              buildCircularPercentIndicator(correct, totalQuestions),
             ],
           ),
         ],
@@ -380,15 +385,16 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget buildCircularPercentIndicator(int correct, int totalQuestions) {
-    double percentage = totalQuestions > 0 ? min(correct / totalQuestions / 20, 1.0) : 0.0;
+    double screenWidth = MediaQuery.of(context).size.width;
+    double percentage = totalQuestions > 0 ? min(correct / totalQuestions, 1.0) : 0.0;
 
     return CircularPercentIndicator(
-      radius: 70.0,
-      lineWidth: 12.0,
-      percent: percentage,  // Set the percentage divided by 20
+      radius: screenWidth * 0.15,  // Responsive radius based on screen width (15% of the screen width)
+      lineWidth: screenWidth * 0.03,  // Responsive line width (3% of the screen width)
+      percent: percentage,
       center: Text(
-        "${(percentage * 100).toStringAsFixed(2)}%", // Display the percentage value correctly
-        style: TextStyle(fontSize: 16.0),
+        "${(percentage * 100).toStringAsFixed(2)}%",
+        style: TextStyle(fontSize: screenWidth * 0.045),  // Responsive font size
       ),
       progressColor: Color(0xFFEBC272),
       backgroundColor: Color(0xFF373737),
@@ -396,45 +402,69 @@ class _HomePageState extends State<HomePage> {
   }
 
 
+
   Widget buildQuizButtons(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            QuizTypeButton(
-              button_color: Color(0xFFCFFFDF),
-              button_text: 'Counting',
-              questions: questions_count,
-              quizType: 'counting',
-              buttonImage: 'lib/images/counting_button_img.png',
-            ),
-            QuizTypeButton(
-              button_color: Color.fromARGB(255, 255, 213, 231),
-              button_text: "Coloring",
-              questions: questions_color,
-              quizType: 'coloring',
-              buttonImage: 'lib/images/coloring_button_img.png',
-            ),
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            QuizTypeButton(
-              button_color: Color(0xFFD4DDFF),
-              button_text: 'Calculation',
-              questions: questions_calculation,
-              quizType: 'calculate',
-              buttonImage: 'lib/images/calculation_button_img.png',
-            ),
-            buildResultHistoryButton(context),
-          ],
-        ),
-      ],
+    return Center(  // This ensures the entire Column is centered in the screen
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: QuizTypeButton(
+                    button_color: Color(0xFFCFFFDF),
+                    button_text: 'Counting',
+                    questions: questions_count,
+                    quizType: 'counting',
+                    buttonImage: 'lib/images/counting_button_img.png',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: QuizTypeButton(
+                    button_color: Color.fromARGB(255, 255, 213, 231),
+                    button_text: "Coloring",
+                    questions: questions_color,
+                    quizType: 'coloring',
+                    buttonImage: 'lib/images/coloring_button_img.png',
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: QuizTypeButton(
+                    button_color: Color(0xFFD4DDFF),
+                    button_text: 'Calculation',
+                    questions: questions_calculation,
+                    quizType: 'calculate',
+                    buttonImage: 'lib/images/calculation_button_img.png',
+                  ),
+                ),
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: buildResultHistoryButton(context),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
+
 
   Widget buildResultHistoryButton(BuildContext context) {
     return Container(
