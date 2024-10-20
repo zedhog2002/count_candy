@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'globals.dart';
 import 'user_details_page.dart'; // Import the global file
 
-
 class RegisterPage extends StatefulWidget {
   final Function()? onTap;
 
@@ -25,12 +24,18 @@ class _RegisterPageState extends State<RegisterPage> {
   final passwordController = TextEditingController();
   final confirmPasswordController = TextEditingController();
 
+  bool isLoading = false; // Variable to track loading state
+
   // Function to handle user registration
   void signUserUp() async {
     if (passwordController.text != confirmPasswordController.text) {
       showErrorMessage("Passwords do not match.");
       return;
     }
+
+    setState(() {
+      isLoading = true; // Show loader when API call starts
+    });
 
     try {
       final response = await http.post(
@@ -46,6 +51,10 @@ class _RegisterPageState extends State<RegisterPage> {
         }),
       );
 
+      setState(() {
+        isLoading = false; // Hide loader when response is received
+      });
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         final userId = data['uid'];
@@ -54,11 +63,16 @@ class _RegisterPageState extends State<RegisterPage> {
         await setGlobalUid(userId); // Store in SharedPreferences and set global UID
 
         Navigator.pushReplacement(
-            context, MaterialPageRoute(builder: (context) => UserDetailsPage()));
+          context,
+          MaterialPageRoute(builder: (context) => UserDetailsPage()),
+        );
       } else {
         showErrorMessage('Failed to register.');
       }
     } catch (e) {
+      setState(() {
+        isLoading = false; // Hide loader on error
+      });
       showErrorMessage('An error occurred during registration.');
     }
   }
@@ -228,7 +242,9 @@ class _RegisterPageState extends State<RegisterPage> {
                             obscureText: true,
                           ),
                           const SizedBox(height: 25),
-                          MyButton(
+                          isLoading
+                              ? Center(child: CircularProgressIndicator()) // Show loader if isLoading is true
+                              : MyButton(
                             text: "Sign Up",
                             onTap: signUserUp,
                           ),
@@ -281,4 +297,3 @@ class _RegisterPageState extends State<RegisterPage> {
     super.dispose();
   }
 }
-

@@ -23,9 +23,16 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
   final TextEditingController preferredSubjectController = TextEditingController();
   String? selectedGender;
 
+  bool isLoading = false; // Add a loading flag
+
   Future<void> saveUserDetails(
       String childName, int childAge, String childGender, String parentName, String parentPhone, String address, String preferredSubject) async {
     try {
+      // Set isLoading to true before sending the request
+      setState(() {
+        isLoading = true;
+      });
+
       // Use the global UID instead of fetching it from SharedPreferences
       if (globalUid == null || globalUid!.isEmpty) {
         throw Exception('User UID not found. Please log in again.');
@@ -57,6 +64,11 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
       }
     } catch (e) {
       print('Error while saving user details: $e');
+    } finally {
+      // Set isLoading to false after receiving the response
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -77,135 +89,141 @@ class _UserDetailsPageState extends State<UserDetailsPage> {
           ),
         ],
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          color: Color(0xFFF6F6F6), // Background color
-          image: DecorationImage(
-            image: AssetImage('lib/images/background.png'), // Image asset
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.white.withOpacity(0.1), // 10% opacity (90% transparent)
-              BlendMode.dstATop, // Apply the opacity to the image
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              color: Color(0xFFF6F6F6), // Background color
+              image: DecorationImage(
+                image: AssetImage('lib/images/background.png'), // Image asset
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.white.withOpacity(0.1), // 10% opacity (90% transparent)
+                  BlendMode.dstATop, // Apply the opacity to the image
+                ),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  MyTextField(
+                    controller: nameController,
+                    hintText: 'Name',
+                    obscureText: false,
+                  ),
+                  const SizedBox(height: 20),
+                  MyTextField(
+                    controller: ageController,
+                    hintText: 'Age',
+                    obscureText: false,
+                  ),
+                  const SizedBox(height: 20),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(45),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Color.fromARGB(255, 101, 101, 101).withOpacity(0.5),
+                            blurRadius: 5,
+                            spreadRadius: 2,
+                            offset: Offset(6, 6),
+                          ),
+                        ],
+                      ),
+                      child: DropdownButtonFormField<String>(
+                        value: selectedGender,
+                        decoration: InputDecoration(
+                          border: InputBorder.none, // Remove the border to match the TextField style
+                          contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjust padding to match the TextField
+                        ),
+                        hint: Text('Select Gender', style: TextStyle(color: Colors.grey)), // Add hint text
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            selectedGender = newValue;
+                          });
+                        },
+                        items: <String>['Male', 'Female']
+                            .map<DropdownMenuItem<String>>((String value) {
+                          return DropdownMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          );
+                        }).toList(),
+                        icon: Icon(Icons.arrow_drop_down, color: Colors.grey), // Add an icon if needed
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+                  MyTextField(
+                    controller: parentsNameController,
+                    hintText: "Parents' Name",
+                    obscureText: false,
+                  ),
+                  const SizedBox(height: 20),
+                  MyTextField(
+                    controller: parentsPhoneNumberController,
+                    hintText: "Parents' Phone Number",
+                    obscureText: false,
+                  ),
+                  const SizedBox(height: 20),
+                  MyTextField(
+                    controller: addressController,
+                    hintText: 'Address',
+                    obscureText: false,
+                  ),
+                  const SizedBox(height: 20),
+                  MyTextField(
+                    controller: preferredSubjectController,
+                    hintText: 'Preferred Subject',
+                    obscureText: false,
+                  ),
+                  const SizedBox(height: 20),
+                  Center(
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
+                        foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
+                        minimumSize: MaterialStateProperty.all<Size>(Size(350.0, 50)),
+                        elevation: MaterialStateProperty.all<double>(20.0),
+                      ),
+                      onPressed: () async {
+                        await saveUserDetails(
+                          nameController.text,
+                          int.tryParse(ageController.text) ?? 0,
+                          selectedGender ?? 'Not specified',
+                          parentsNameController.text,
+                          parentsPhoneNumberController.text,
+                          addressController.text,
+                          preferredSubjectController.text,
+                        );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => HomePage(),
+                          ),
+                        );
+                      },
+                      child: Text('Submit details'),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              MyTextField(
-                controller: nameController,
-                hintText: 'Name',
-                obscureText: false,
-              ),
-              const SizedBox(height: 20),
-              MyTextField(
-                controller: ageController,
-                hintText: 'Age',
-                obscureText: false,
-              ),
-              const SizedBox(height: 20),
-
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(45),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Color.fromARGB(255, 101, 101, 101).withOpacity(0.5),
-                        blurRadius: 5,
-                        spreadRadius: 2,
-                        offset: Offset(6, 6),
-                      ),
-                    ],
-                  ),
-                  child: DropdownButtonFormField<String>(
-                    value: selectedGender,
-                    decoration: InputDecoration(
-                      border: InputBorder.none, // Remove the border to match the TextField style
-                      contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 20), // Adjust padding to match the TextField
-                    ),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        selectedGender = newValue;
-                      });
-                    },
-                    items: <String>['Male', 'Female', 'Prefer not to say'].map<DropdownMenuItem<String>>((String value) {
-                      return DropdownMenuItem<String>(
-                        value: value,
-                        child: Text(value),
-                      );
-                    }).toList(),
-                    icon: Icon(Icons.arrow_drop_down, color: Colors.grey), // Add an icon if needed
-                  ),
-                ),
-              ),
-
-
-              const SizedBox(height: 20),
-              MyTextField(
-                controller: parentsNameController,
-                hintText: "Parents' Name",
-                obscureText: false,
-              ),
-              const SizedBox(height: 20),
-              MyTextField(
-                controller: parentsPhoneNumberController,
-                hintText: "Parents' Phone Number",
-                obscureText: false,
-              ),
-              const SizedBox(height: 20),
-              MyTextField(
-                controller: addressController,
-                hintText: 'Address',
-                obscureText: false,
-              ),
-              const SizedBox(height: 20),
-              MyTextField(
-                controller: preferredSubjectController,
-                hintText: 'Preferred Subject',
-                obscureText: false,
-              ),
-              const SizedBox(height: 20),
-              Center(
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor: MaterialStateProperty.all<Color>(Colors.black),
-                    foregroundColor: MaterialStateProperty.all<Color>(Colors.white),
-                    minimumSize: MaterialStateProperty.all<Size>(Size(350.0, 50)),
-                    elevation: MaterialStateProperty.all<double>(20.0),
-                  ),
-                  onPressed: () async {
-                    // Save user profile data
-                    await saveUserDetails(
-                      nameController.text,
-                      int.tryParse(ageController.text) ?? 0,
-                      selectedGender ?? 'Not specified',
-                      parentsNameController.text,
-                      parentsPhoneNumberController.text,
-                      addressController.text,
-                      preferredSubjectController.text,
-
-                    );
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HomePage(),
-                      ),
-                    );
-                  },
-                  child: Text('Submit details'),
-                ),
-              ),
-            ],
-          ),
-        ),
+          // Display a circular progress indicator when isLoading is true
+          if (isLoading)
+            Center(
+              child: CircularProgressIndicator(),
+            ),
+        ],
       ),
-      
       floatingActionButton: SizedBox(
         width: 100.0,
         height: 100.0,

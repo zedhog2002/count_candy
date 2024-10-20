@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
-
-import '../models/answers.dart';
 import 'globals.dart';
 import 'home_page.dart';
-import 'login_page.dart'; // For navigating back to the home page
 
 class QuizResultPage extends StatefulWidget {
   final Map<String, List<double>> userAnswers;
@@ -24,9 +20,18 @@ class QuizResultPage extends StatefulWidget {
   _QuizResultPageState createState() => _QuizResultPageState();
 }
 
+
 class _QuizResultPageState extends State<QuizResultPage> {
   double? prediction;
   bool quizSubmitted = false;
+  bool isLoading = false; // Add a loading flag
+  bool _isDisposed = false; // Add a flag to track if the widget is disposed
+
+  @override
+  void dispose() {
+    _isDisposed = true; // Set the flag to true when the widget is disposed
+    super.dispose();
+  }
 
   // Post quiz results to the backend
   Future<void> quiz_update() async {
@@ -34,6 +39,12 @@ class _QuizResultPageState extends State<QuizResultPage> {
     int avgResult;
 
     try {
+      if (!_isDisposed) {
+        setState(() {
+          isLoading = true; // Set loading to true before starting the API call
+        });
+      }
+
       List<int> questionids = widget.questionids;
 
       if (widget.quizType == 'counting') {
@@ -76,6 +87,12 @@ class _QuizResultPageState extends State<QuizResultPage> {
       await checkAllQuizzesAndPredict();
     } catch (e) {
       print('Error from quiz_result_page.dart: $e');
+    } finally {
+      if (!_isDisposed) {
+        setState(() {
+          isLoading = false; // Set loading to false after completing the request
+        });
+      }
     }
   }
 
@@ -97,10 +114,12 @@ class _QuizResultPageState extends State<QuizResultPage> {
           _showMissingQuizzes(data['quizzes_to_attempt']);
         } else if (data.containsKey('result')) {
           // If prediction is available, display it
-          setState(() {
-            prediction = data['result'];
-            quizSubmitted = true;
-          });
+          if (!_isDisposed) {
+            setState(() {
+              prediction = data['result'];
+              quizSubmitted = true;
+            });
+          }
         }
       } else {
         throw Exception('Failed to fetch prediction');
@@ -112,24 +131,26 @@ class _QuizResultPageState extends State<QuizResultPage> {
 
   // Show missing quizzes in an alert dialog
   void _showMissingQuizzes(List<dynamic> missingQuizzes) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Incomplete Quizzes'),
-          content: Text(
-              'Please attempt the following quizzes: ${missingQuizzes.join(', ')}'),
-          actions: [
-            TextButton(
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.pop(context);
-              },
-            ),
-          ],
-        );
-      },
-    );
+    if (!_isDisposed) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text('Incomplete Quizzes'),
+            content: Text(
+                'Please attempt the following quizzes: ${missingQuizzes.join(', ')}'),
+            actions: [
+              TextButton(
+                child: Text('OK'),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   // Helper function to calculate average score
@@ -161,81 +182,90 @@ class _QuizResultPageState extends State<QuizResultPage> {
           ),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage('lib/images/background.png'),
-            fit: BoxFit.cover,
-            colorFilter: ColorFilter.mode(
-              Colors.white.withOpacity(0.1),
-              BlendMode.dstATop,
+      body: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('lib/images/background.png'),
+                fit: BoxFit.cover,
+                colorFilter: ColorFilter.mode(
+                  Colors.white.withOpacity(0.1),
+                  BlendMode.dstATop,
+                ),
+              ),
+            ),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  Image.asset("lib/images/Result_page.png", width: 340, height: 350),
+                  Text(
+                    'Tiny Rockstar! Your Results\n are here!',
+                    style: TextStyle(fontSize: 20.0),
+                    textAlign: TextAlign.center,
+                  ),
+                  SizedBox(height: 20.0),
+                  Container(
+                    width: 300,
+                    height: 110,
+                    decoration: BoxDecoration(
+                      color: Color(0xFF373737),
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Your accuracy score for ${widget.quizType} questions is',
+                          style: TextStyle(fontSize: 14.0, color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                        Text(
+                          '${_calculateAverage(widget.userAnswers[widget.quizType] ?? [])} %',
+                          style: TextStyle(fontSize: 45, color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(height: 20.0),
+                  Text(
+                    'Quiz-tastic! Your brain is like a superhero -\n swooping in to save the day!',
+                    style: TextStyle(fontSize: 13),
+                  ),
+                  SizedBox(height: 40.0),
+                  ElevatedButton(
+                    onPressed: () async {
+                      await quiz_update(); // Post quiz results and check for prediction
+                      // Navigate back to the HomePage after submitting the quiz
+                      if (!_isDisposed) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(builder: (context) => HomePage()),  // Pass any necessary parameters to HomePage
+                              (Route<dynamic> route) => false,  // Remove all previous routes
+                        );
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Color(0xFFEBC272),
+                      minimumSize: Size(270, 60),
+                    ),
+                    child: Text(
+                      'Submit Quiz Results',
+                      style: TextStyle(fontSize: 25, color: Colors.black),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: <Widget>[
-              Image.asset("lib/images/Result_page.png", width: 340, height: 350),
-              Text(
-                'Tiny Rockstar! Your Results\n are here!',
-                style: TextStyle(fontSize: 20.0),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(height: 20.0),
-              Container(
-                width: 300,
-                height: 110,
-                decoration: BoxDecoration(
-                  color: Color(0xFF373737),
-                  borderRadius: BorderRadius.circular(15),
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Text(
-                      'Your accuracy score for ${widget.quizType} questions is',
-                      style: TextStyle(fontSize: 14.0, color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-                    Text(
-                      '${_calculateAverage(widget.userAnswers[widget.quizType] ?? [])} %',
-                      style: TextStyle(fontSize: 45, color: Colors.white),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-              SizedBox(height: 20.0),
-              Text(
-                'Quiz-tastic! Your brain is like a superhero -\n swooping in to save the day!',
-                style: TextStyle(fontSize: 13),
-              ),
-              SizedBox(height: 40.0),
-              ElevatedButton(
-                onPressed: () async {
-                  await quiz_update(); // Post quiz results and check for prediction
-                  // Navigate back to the HomePage after submitting the quiz
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => HomePage()),  // Pass any necessary parameters to HomePage
-                        (Route<dynamic> route) => false,  // Remove all previous routes
-                  );
-                },
-
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFEBC272),
-                  minimumSize: Size(270, 60),
-                ),
-                child: Text(
-                  'Submit Quiz Results',
-                  style: TextStyle(fontSize: 25, color: Colors.black),
-                ),
-              ),
-            ],
-          ),
-        ),
+          if (isLoading)
+            Center(
+              child: CircularProgressIndicator(), // Display a loading indicator while isLoading is true
+            ),
+        ],
       ),
     );
   }
