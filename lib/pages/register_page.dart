@@ -157,6 +157,22 @@ class _RegisterPageState extends State<RegisterPage> {
                             hintText: 'Email',
                             obscureText: false,
                           ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(25, 0, 0, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 5),
+                                Text(
+                                  'Email must be in the format: example@domain.com',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[700],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                           const SizedBox(height: 20),
                           MyTextField(
                             controller: usernameController,
@@ -168,6 +184,42 @@ class _RegisterPageState extends State<RegisterPage> {
                             controller: passwordController,
                             hintText: 'Password',
                             obscureText: true,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(25, 0, 0, 0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(height: 5),
+                                Text(
+                                  'Password must contain:',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  '- At least 8 characters',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                ),
+                                Text(
+                                  '- At least one uppercase letter',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                ),
+                                Text(
+                                  '- At least one lowercase letter',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                ),
+                                Text(
+                                  '- At least one number',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                ),
+                                Text(
+                                  '- At least one special character (@, \$, !, %, *, ?, &)',
+                                  style: TextStyle(fontSize: 12, color: Colors.grey[700]),
+                                ),
+                              ],
+                            ),
                           ),
                           const SizedBox(height: 10),
                           MyTextField(
