@@ -67,7 +67,9 @@ class _RegisterPageState extends State<RegisterPage> {
           MaterialPageRoute(builder: (context) => UserDetailsPage()),
         );
       } else {
-        showErrorMessage('Failed to register.');
+        // Show the specific error message returned from the backend
+        final errorResponse = jsonDecode(response.body);
+        showErrorMessage(errorResponse['detail'] ?? 'Failed to register.');
       }
     } catch (e) {
       setState(() {
