@@ -7,9 +7,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'login_page.dart';
 
-const String apiUrl = 'https://conscious-claudette-krssn-7b763b7e.koyeb.app';
+//const String apiUrl = 'https://conscious-claudette-krssn-7b763b7e.koyeb.app';
+const String apiUrl = 'http://127.0.0.1:8000';
 
 String? globalUid; // Global variable to store the current user's UID
+
+bool isFirstAttempt_counting = true;
+bool isFirstAttempt_coloring = true;
+bool isFirstAttempt_calculation = true;
+
 
 // Function to log the user in by setting the global UID and storing it in SharedPreferences
 Future<void> setGlobalUid(String uid) async {

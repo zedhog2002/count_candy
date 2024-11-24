@@ -1,8 +1,64 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:untitled1/pages/quiz_page.dart';
+import 'package:http/http.dart' as http;
+
 import 'package:untitled1/data/quiz_data.dart';
-import 'package:untitled1/models/question.dart';
+
+
+import '../models/question.dart';
+import '../pages/globals.dart';
+import '../pages/quiz_page.dart';
+
+
+
+
+Future<List<Map<String, dynamic>>> generateQuestions(String? uid) async {
+  List<Map<String, dynamic>> quizQuestions = [];
+
+  try {
+    // Call /flux_image to get the question and answer
+    var fluxResponse = await http.post(
+      Uri.parse('{$apiUrl}/flux_image'),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode({"uid": uid}),
+    );
+
+    if (fluxResponse.statusCode == 200) {
+      var fluxData = json.decode(fluxResponse.body);
+
+      // Extract question string and answer
+      String questionString = fluxData["prompt"];
+      String answer = fluxData["result"];
+
+      // Call /get_image to retrieve the question image
+      var imageResponse = await http.post(
+        Uri.parse('{$apiUrl}/get_image'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({"uid": uid}),
+      );
+
+      if (imageResponse.statusCode == 200) {
+        // Extract the image URL (or image data)
+        String questionImage = "https://your-image-storage.com/${uid}.jpg"; // Adjust based on your API response
+
+        // Add to the question list
+        quizQuestions.add({
+          "question": questionString,
+          "image": questionImage,
+          "answer": answer,
+        });
+      }
+    }
+  } catch (e) {
+    print("Error generating questions: $e");
+  }
+
+  return quizQuestions;
+}
+
+
 
 class QuizTypeButton extends StatelessWidget {
   final String button_text;
@@ -10,6 +66,7 @@ class QuizTypeButton extends StatelessWidget {
   final List<Question> questions;
   final String quizType;
   final String buttonImage;
+  final bool isFirstQuizAttempt;
 
   const QuizTypeButton({
     Key? key,
@@ -18,6 +75,7 @@ class QuizTypeButton extends StatelessWidget {
     required this.questions,
     required this.quizType,
     required this.buttonImage,
+    required this.isFirstQuizAttempt,
   }) : super(key: key);
 
   @override
@@ -35,13 +93,26 @@ class QuizTypeButton extends StatelessWidget {
           shadowColor: Colors.black,
           elevation: 12,
         ),
-        onPressed: () {
+        onPressed: () async {
+          List<Map<String, dynamic>> quizQuestions;
+
+          if (!isFirstQuizAttempt) {
+            // Use the predefined questions for the first attempt
+            loadGlobalUid();
+            quizQuestions = await generateQuestions(globalUid);
+          }
+
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => QuizPage(questions: questions, quizType: quizType),
             ),
           );
+
+          // Mark as not first attempt after navigation
+          if (quizType == 'counting') isFirstAttempt_counting = false;
+          if (quizType == 'coloring') isFirstAttempt_coloring = false;
+          if (quizType == 'calculate') isFirstAttempt_calculation = false;
         },
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

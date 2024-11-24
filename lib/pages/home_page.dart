@@ -26,6 +26,7 @@ class _HomePageState extends State<HomePage> {
   dynamic listfromresult;
   bool isFirstAttempt = true;
 
+
   // Variables to store the last attempt data for each quiz
   int countingResult = 0;
   int coloringResult = 0;
@@ -420,6 +421,7 @@ class _HomePageState extends State<HomePage> {
                     questions: questions_count,
                     quizType: 'counting',
                     buttonImage: 'lib/images/counting_button_img.png',
+                    isFirstQuizAttempt: isFirstAttempt_counting,
                   ),
                 ),
               ),
@@ -432,6 +434,7 @@ class _HomePageState extends State<HomePage> {
                     questions: questions_color,
                     quizType: 'coloring',
                     buttonImage: 'lib/images/coloring_button_img.png',
+                    isFirstQuizAttempt: isFirstAttempt_coloring,
                   ),
                 ),
               ),
@@ -449,6 +452,7 @@ class _HomePageState extends State<HomePage> {
                     questions: questions_calculation,
                     quizType: 'calculate',
                     buttonImage: 'lib/images/calculation_button_img.png',
+                    isFirstQuizAttempt: isFirstAttempt_calculation,
                   ),
                 ),
               ),
