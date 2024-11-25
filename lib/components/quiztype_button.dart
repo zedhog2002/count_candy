@@ -7,56 +7,12 @@ import 'package:http/http.dart' as http;
 import 'package:untitled1/data/quiz_data.dart';
 
 
+import '../models/generated_question.dart';
 import '../models/question.dart';
+import '../pages/generated_quiz_page.dart';
 import '../pages/globals.dart';
 import '../pages/quiz_page.dart';
 
-
-
-
-Future<List<Map<String, dynamic>>> generateQuestions(String? uid) async {
-  List<Map<String, dynamic>> quizQuestions = [];
-
-  try {
-    // Call /flux_image to get the question and answer
-    var fluxResponse = await http.post(
-      Uri.parse('{$apiUrl}/flux_image'),
-      headers: {'Content-Type': 'application/json'},
-      body: json.encode({"uid": uid}),
-    );
-
-    if (fluxResponse.statusCode == 200) {
-      var fluxData = json.decode(fluxResponse.body);
-
-      // Extract question string and answer
-      String questionString = fluxData["prompt"];
-      String answer = fluxData["result"];
-
-      // Call /get_image to retrieve the question image
-      var imageResponse = await http.post(
-        Uri.parse('{$apiUrl}/get_image'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({"uid": uid}),
-      );
-
-      if (imageResponse.statusCode == 200) {
-        // Extract the image URL (or image data)
-        String questionImage = "https://your-image-storage.com/${uid}.jpg"; // Adjust based on your API response
-
-        // Add to the question list
-        quizQuestions.add({
-          "question": questionString,
-          "image": questionImage,
-          "answer": answer,
-        });
-      }
-    }
-  } catch (e) {
-    print("Error generating questions: $e");
-  }
-
-  return quizQuestions;
-}
 
 
 
@@ -78,6 +34,33 @@ class QuizTypeButton extends StatelessWidget {
     required this.isFirstQuizAttempt,
   }) : super(key: key);
 
+  Future<void> generateQuestions(
+      String? globalUid, String quizType, BuildContext context) async {
+    // Dummy question data specific to count_1
+    final Map<String, dynamic> jsonData = {
+      "question_quiznumber": "count_1", // Matches the 'questiontypenumber' field
+      "question_string": "How many apples are there in the image?",
+      "gen_image": "https://example.com/sample-image.png",
+      "options": ["3", "5", "7", "9"],
+      "answer": "5"
+    };
+
+    // Create a GeneratedQuestion object
+    final generatedQuestion = GeneratedQuestion.fromJson(jsonData);
+
+    // Navigate to the GeneratedQuizPage
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GeneratedQuizPage(
+          generated_question: generatedQuestion,
+        ),
+      ),
+    );
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -94,26 +77,29 @@ class QuizTypeButton extends StatelessWidget {
           elevation: 12,
         ),
         onPressed: () async {
-          List<Map<String, dynamic>> quizQuestions;
-
-          if (!isFirstQuizAttempt) {
-            // Use the predefined questions for the first attempt
-            loadGlobalUid();
-            quizQuestions = await generateQuestions(globalUid);
+          if (isFirstQuizAttempt) {
+            // First attempt: Navigate directly to the QuizPage with predefined questions
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => QuizPage(
+                  questions: questions,
+                  quizType: quizType,
+                ),
+              ),
+            );
+          } else {
+            // Second or subsequent attempts: Generate a new question dynamically
+            loadGlobalUid(); // Ensure the globalUid is available
+            await generateQuestions(globalUid, quizType, context);
           }
-
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => QuizPage(questions: questions, quizType: quizType),
-            ),
-          );
 
           // Mark as not first attempt after navigation
           if (quizType == 'counting') isFirstAttempt_counting = false;
-          if (quizType == 'coloring') isFirstAttempt_coloring = false;
-          if (quizType == 'calculate') isFirstAttempt_calculation = false;
+          //if (quizType == 'coloring') isFirstAttempt_coloring = false;
+          //if (quizType == 'calculate') isFirstAttempt_calculation = false;
         },
+
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
