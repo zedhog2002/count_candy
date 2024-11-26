@@ -6,10 +6,12 @@ import 'package:http/http.dart' as http;
 
 import 'package:untitled1/data/quiz_data.dart';
 import 'package:untitled1/models/answers.dart';
+import 'package:untitled1/pages/quiz_result_page.dart';
 
 
 import '../models/generated_question.dart';
 import '../models/question.dart';
+import '../pages/generated_quiz_Result_page.dart';
 import '../pages/generated_quiz_page.dart';
 import '../pages/globals.dart';
 import '../pages/quiz_page.dart';
@@ -61,6 +63,10 @@ class QuizTypeButton extends StatelessWidget {
       "answer": "9"
     }];
 
+    double avg_counting = 0.0;
+    double avg_coloring = 0.0;
+    double avg_calculation = 0.0;
+
     // Create a GeneratedQuestion object
     for(int i=0;i<3;i++){
       //======================================================================================================================================
@@ -76,12 +82,34 @@ class QuizTypeButton extends StatelessWidget {
           ),
         ),
       );
-      print("from quiz_type_button.dart, generated_answr_counting:");
+      print("from quiz_type_button.dart, generated_answer_counting:");
       print(generated_answer_counting);
+      if(quizType == "counting"){
+        avg_counting = generated_answer_counting.reduce((a, b) => a + b);
+        avg_counting = avg_counting / generated_answer_counting.length;
+        generatedUserAnswer["counting"]?.add(avg_counting);
+
+      }
+      if(quizType == "coloring"){
+        avg_coloring = generated_answer_coloring.reduce((a, b) => a + b);
+        avg_coloring = avg_coloring/ generated_answer_coloring.length;
+        generatedUserAnswer["coloring"]?.add(avg_coloring);
+      }
+      if(quizType == "calculation"){
+        avg_calculation = generated_answer_calculation.reduce((a, b) => a + b);
+        avg_calculation = avg_calculation / generated_answer_calculation.length;
+        generatedUserAnswer["calculation"]?.add(avg_calculation);
+      }
       //===============================================================================================================================================
-      //API to post generated quiz answer average to backend
+      //API to post generated quiz answer average to backend : directly post either generated_Answer_calculation or avg_Coloring etc.
       //===============================================================================================================================================
     }
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GeneratedQuizResultPage(quizType: quizType),
+      ),
+    );
 
 
   }
