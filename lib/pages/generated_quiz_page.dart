@@ -3,12 +3,17 @@ import 'package:flutter/material.dart';
 
 import '../models/generated_question.dart';
 import 'count_widgets/count_1.dart';
+import 'count_widgets/count_2.dart';
+import 'count_widgets/count_3.dart';
 
 class GeneratedQuizPage extends StatelessWidget {
   final GeneratedQuestion generated_question;
 
+
   const GeneratedQuizPage({Key? key, required this.generated_question})
       : super(key: key);
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +21,10 @@ class GeneratedQuizPage extends StatelessWidget {
     switch (generated_question.question_quiznumber) {
       case "count_1": // For count_1 type question
         return Count1Page(data: generated_question.data);
+      case "count_2": // For count_1 type question
+        return Count2Page(data: generated_question.data);
+      case "count_3": // For count_1 type question
+        return Count3Page(data: generated_question.data);
       default:
         return Scaffold(
           appBar: AppBar(title: Text("Generated Quiz")),

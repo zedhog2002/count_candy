@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'package:untitled1/data/quiz_data.dart';
+import 'package:untitled1/models/answers.dart';
 
 
 import '../models/generated_question.dart';
@@ -37,26 +38,52 @@ class QuizTypeButton extends StatelessWidget {
   Future<void> generateQuestions(
       String? globalUid, String quizType, BuildContext context) async {
     // Dummy question data specific to count_1
-    final Map<String, dynamic> jsonData = {
+    final List<Map<String, dynamic>> jsonData_count = [{
+      "quiz_type": "counting",
       "question_quiznumber": "count_1", // Matches the 'questiontypenumber' field
       "question_string": "How many apples are there in the image?",
       "gen_image": "https://example.com/sample-image.png",
       "options": ["3", "5", "7", "9"],
       "answer": "5"
-    };
+    }, {
+      "quiz_type": "counting",
+      "question_quiznumber": "count_2", // Matches the 'questiontypenumber' field
+      "question_string": "How many balls are there in the image?",
+      "gen_image": "https://example.com/sample-image.png",
+      "options": ["3", "5", "7", "9"],
+      "answer": "3"
+    }, {
+      "quiz_type": "counting",
+      "question_quiznumber": "count_3", // Matches the 'questiontypenumber' field
+      "question_string": "How many cookies are there in the image?",
+      "gen_image": "https://example.com/sample-image.png",
+      "options": ["3", "5", "7", "9"],
+      "answer": "9"
+    }];
 
     // Create a GeneratedQuestion object
-    final generatedQuestion = GeneratedQuestion.fromJson(jsonData);
-
-    // Navigate to the GeneratedQuizPage
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => GeneratedQuizPage(
-          generated_question: generatedQuestion,
+    for(int i=0;i<3;i++){
+      //======================================================================================================================================
+      //api call to generate question: count_i (quiz_type_i)
+      //=========================================================================================================================================
+      final generatedQuestion = GeneratedQuestion.fromJson(jsonData_count[i]);
+      // Wait for the page to return a result
+      await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => GeneratedQuizPage(
+            generated_question: generatedQuestion,
+          ),
         ),
-      ),
-    );
+      );
+      print("from quiz_type_button.dart, generated_answr_counting:");
+      print(generated_answer_counting);
+      //===============================================================================================================================================
+      //API to post generated quiz answer average to backend
+      //===============================================================================================================================================
+    }
+
+
   }
 
 

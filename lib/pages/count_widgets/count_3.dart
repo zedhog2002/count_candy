@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import '../../models/answers.dart';
 
-class Count1Page extends StatefulWidget {
+class Count3Page extends StatefulWidget {
   final Map<String, dynamic> data;
 
-  const Count1Page({Key? key, required this.data}) : super(key: key);
+  const Count3Page({Key? key, required this.data}) : super(key: key);
 
   @override
-  _Count1PageState createState() => _Count1PageState();
+  _Count3PageState createState() => _Count3PageState();
 }
 
-class _Count1PageState extends State<Count1Page> {
+class _Count3PageState extends State<Count3Page> {
   String? selectedAnswer;
 
   void handleAnswerSelection(BuildContext context, String value, String correctAnswer) {
@@ -19,12 +19,12 @@ class _Count1PageState extends State<Count1Page> {
     });
 
     if (value == correctAnswer) {
-      generated_answer_counting[0] = 100.0;
+      generated_answer_counting[2] = 100.0;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Correct Answer!")),
       );
     } else {
-      generated_answer_counting[0] = 0.0;
+      generated_answer_counting[2] = 0.0;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Try Again!")),
       );
@@ -44,7 +44,7 @@ class _Count1PageState extends State<Count1Page> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Count 1 Quiz'),
+        title: Text('Count 3 Quiz'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
