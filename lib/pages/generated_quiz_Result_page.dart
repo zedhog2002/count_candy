@@ -19,7 +19,19 @@ class GeneratedQuizResultPage extends StatefulWidget {
 
 
 class _GeneratedQuizResultPageState extends State<GeneratedQuizResultPage> {
+  double? lastScore;
 
+  @override
+  void initState() {
+    super.initState();
+    // Fetch the last score for the respective quizType
+    final scores = generatedUserAnswer[widget.quizType];
+    if (scores != null && scores.isNotEmpty) {
+      lastScore = scores.last; // Get the last score
+    } else {
+      lastScore = null; // Handle empty list
+    }
+  }
 
 
   @override
@@ -83,7 +95,9 @@ class _GeneratedQuizResultPageState extends State<GeneratedQuizResultPage> {
                           textAlign: TextAlign.center,
                         ),
                         Text(
-                          '${generatedUserAnswer[widget.quizType]} %',
+                          lastScore != null
+                              ? '${lastScore!.toStringAsFixed(2)}%' // Format the score to 2 decimal places
+                              : 'N/A', // Display "N/A" if there's no score
                           style: TextStyle(fontSize: 45, color: Colors.white),
                           textAlign: TextAlign.center,
                         ),

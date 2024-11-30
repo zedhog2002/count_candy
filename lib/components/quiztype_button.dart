@@ -39,26 +39,28 @@ class QuizTypeButton extends StatelessWidget {
 
   Future<void> generateQuestions(
       String? globalUid, String quizType, BuildContext context) async {
+    final String image_url = "https://bfldeliverysc.blob.core.windows.net/results/ed8806fc189742a7b2ea21cb8ba7e1cc/sample.jpeg?se=2024-11-30T12%3A33%3A04Z&sp=r&sv=2024-11-04&sr=b&rsct=image/jpeg&sig=Pn0C9VpC04KD1OIubaLW2tIHyT19niFhcz%2BBAXS7%2BLI%3D";
     // Dummy question data specific to count_1
     final List<Map<String, dynamic>> jsonData_count = [{
+
       "quiz_type": "counting",
       "question_quiznumber": "count_1", // Matches the 'questiontypenumber' field
       "question_string": "How many apples are there in the image?",
-      "gen_image": "https://example.com/sample-image.png",
+      "gen_image": image_url,
       "options": ["3", "5", "7", "9"],
       "answer": "5"
     }, {
       "quiz_type": "counting",
       "question_quiznumber": "count_2", // Matches the 'questiontypenumber' field
       "question_string": "How many balls are there in the image?",
-      "gen_image": "https://example.com/sample-image.png",
+      "gen_image": image_url,
       "options": ["3", "5", "7", "9"],
       "answer": "3"
     }, {
       "quiz_type": "counting",
       "question_quiznumber": "count_3", // Matches the 'questiontypenumber' field
       "question_string": "How many cookies are there in the image?",
-      "gen_image": "https://example.com/sample-image.png",
+      "gen_image": image_url,
       "options": ["3", "5", "7", "9"],
       "answer": "9"
     }];

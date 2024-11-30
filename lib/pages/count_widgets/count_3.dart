@@ -32,7 +32,7 @@ class _Count3PageState extends State<Count3Page> {
 
     // Pop the current page and return the score
     Future.delayed(Duration(milliseconds: 500), () {
-      Navigator.pop(context, generated_answer_counting[0]);
+      Navigator.pop(context, generated_answer_counting[2]);
     });
   }
 
@@ -44,33 +44,80 @@ class _Count3PageState extends State<Count3Page> {
 
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Color(0xFFF6F6F6),
         title: Text('Count 3 Quiz'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              questionString,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            Image.network(widget.data['gen_image']),
-            SizedBox(height: 20),
-            ...options.map((option) => ListTile(
-              title: Text(option),
-              leading: Radio<String>(
-                value: option,
-                groupValue: selectedAnswer,
-                onChanged: (value) {
-                  if (value != null) {
-                    handleAnswerSelection(context, value, correctAnswer);
-                  }
-                },
+        elevation: 0,
+        flexibleSpace: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('lib/images/background.png'),
+              fit: BoxFit.cover,
+              colorFilter: ColorFilter.mode(
+                Colors.white.withOpacity(0.1),
+                BlendMode.dstATop,
               ),
-            )),
-          ],
+            ),
+          ),
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('lib/images/background.png'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+              Colors.white.withOpacity(0.1),
+              BlendMode.dstATop,
+            ),
+          ),
+        ),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Transform.scale(
+                scale: 1.25,
+                child: Image.network(
+                  widget.data['gen_image'],
+                  width: 200,
+                  height: 200,
+                ),
+              ),
+              SizedBox(height: 40.0),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Text(
+                  questionString,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              SizedBox(height: 20.0),
+              Column(
+                children: List.generate(
+                  options.length,
+                      (index) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ElevatedButton(
+                      onPressed: () =>
+                          handleAnswerSelection(context, options[index], correctAnswer),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color(0xFFEBC272),
+                        minimumSize: Size(270, 45),
+                      ),
+                      child: Text(
+                        options[index],
+                        style: TextStyle(color: Colors.black, fontSize: 20),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
